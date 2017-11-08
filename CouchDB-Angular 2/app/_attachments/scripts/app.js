@@ -1,19 +1,5 @@
 'use strict'
 
-/*var tariffs = [
-	    			{'kleur': 'Rood', 'max': 3, 'start': 9, 'einde': 22, 'dagen': [0, 1, 2, 3, 4, 5],
-	    			'tarief': [1.60, 2.70, 3.80]},
-	    			{'kleur': 'Donkergroen', 'max': 10, 'start': 9, 'einde': 19, 'dagen': [0, 1, 2, 3, 4, 5],
-	    			'tarief': [0.70, 1.10], 'dagticket': 3.80},
-	    			{'kleur': 'Lichtgroen', 'max': 10, 'start': 9, 'einde': 19, 'dagen': [0, 1, 2, 3, 4, 5],
-	    			'tarief': [0.70, 1.10]},
-	    			{'kleur': 'Geel', 'max': 10, 'start': 9, 'einde': 19, 'dagen': [0, 1, 2, 3, 4, 5],
-	    			'tarief': [0.50]},
-	    			{'kleur': 'Oranje', 'max': 10, 'start': 9, 'einde': 19, 'dagen': [0, 1, 2, 3, 4, 5],
-	    			'tarief': [0.50], 'dagticket': 2.70},
-	    			{'kleur': 'Blauw', 'max': 2, 'start': 9, 'einde': 18, 'dagen': [0, 1, 2, 3, 4, 5],
-	    			'tarief': [0]}
-	    		];*/
 
 angular.module('movieApp', ['ngRoute'])
 
@@ -25,56 +11,34 @@ angular.module('movieApp', ['ngRoute'])
 	        });
 	})
 	
-	.controller('homeCtrl', function($scope, actorSrv, zoneSrv, saveSrv) {
+	.controller('homeCtrl', function($scope, actorSrv, saveSrv) {
 		
 	    	$('#searchButton').on('click', function (e) {
 
-	    		$scope.color = ''; //change to actor
+	    		$scope.films = '';
 
-	    		var address = $('#addressText').val(); //change to actortxt
+	    		var actor = $('#actorText').val();
 	    		
-	    		actorSrv.getCoordinates(address).then(function(data){
-	    			var lat = (data.data[0].filmography.actor); //krijg juiste objectdeel terug
+	    		actorSrv.getActor(actor).then(function(data){
+	    			var actorObject = (data.data[0].filmography.actor); //krijg juiste objectdeel terug
 	    			
-	    			
-	    			var lon = 5; //weg straks.
-	    			
-	    			console.log(lat.length);
-	    			
-	    			console.log(lat[0].title);
-	    			var act = "";
-	    			for(var i = 0; i < lat.length; i++){
-		    			act += " " + (lat[i].title);
-		    			console.log(act);
+	    			var actorString = "";
+	    			for(var i = 0; i < actorObject.length; i++){
+		    			actorString += (actorObject[i].title) + " ; ";
 		    			}
 	    			
-	    			console.log(lat);
+	    			$scope.films = actorString;
 	    			
-	    			$scope.color = act;
-	    			
-	    			/*
-		    		var zones = saveSrv.getObject('zones');
-		    		
-		    		if(Object.keys(zones).length == 0){
-		    			zoneSrv.getZones().then(function(data){
-		    				zones = data;
-		    				saveSrv.setObject('zones', data);
-		    				$scope.color = zoneSrv.getTariff(lon, lat, zones.data);
-		    			});
-		    		}
-		    		else {
-		    			$scope.color = zoneSrv.getTariff(lon, lat, zones.data);
-		    		}*/
-		    		
-		    		
+	    			saveSrv.setObject(actor ,actorString);
+ 		
 	    		});
 	    	});
     })
    
     .service('actorSrv', function($http, $q) {
-    		this.getCoordinates = function(address) {
+    		this.getActor = function(actor) {
 	    		var q = $q.defer();
-	    		var url = 'http://theimdbapi.org/api/find/person?name=' + encodeURIComponent(address) + '&format=json'; //url werkt
+	    		var url = 'http://theimdbapi.org/api/find/person?name=' + encodeURIComponent(actor) + '&format=json'; //url werkt
 	    		
 	    		$http.get(url)
 	    			.then(function(data){
@@ -87,7 +51,7 @@ angular.module('movieApp', ['ngRoute'])
 	    		};
     })
     
-    .service('zoneSrv', function($http, $q) {
+    /*.service('zoneSrv', function($http, $q) {
     		this.getZones = function() {
 			var q = $q.defer();
 			$http.get('http://datasets.antwerpen.be/v4/gis/paparkeertariefzones.json')
@@ -149,13 +113,13 @@ angular.module('movieApp', ['ngRoute'])
 				}
 			}
 		};
-    })
+    })*/
     
     .service('saveSrv', function($window, $http){
 		  this.setObject = function(key, value){
 			  $window.localStorage[key] = JSON.stringify(value);
 			  //Save in CouchDB
-			  //$http.put('../../' + key, value);
+			  $http.put('http://127.0.0.1:5984/examenwebtechnologies/' + key, value);
 		  };
 		  
 		  this.getObject = function(key){
