@@ -15,7 +15,7 @@
 	    			'tarief': [0]}
 	    		];*/
 
-angular.module('parkingApp', ['ngRoute'])
+angular.module('movieApp', ['ngRoute'])
 
 	.config(function($routeProvider) {
 	    $routeProvider
@@ -25,17 +25,34 @@ angular.module('parkingApp', ['ngRoute'])
 	        });
 	})
 	
-	.controller('homeCtrl', function($scope, addressSrv, zoneSrv, saveSrv) {
+	.controller('homeCtrl', function($scope, actorSrv, zoneSrv, saveSrv) {
 		
 	    	$('#searchButton').on('click', function (e) {
 
-	    		$scope.color = '';
+	    		$scope.color = ''; //change to actor
 
-	    		var address = $('#addressText').val();
+	    		var address = $('#addressText').val(); //change to actortxt
 	    		
-	    		addressSrv.getCoordinates(address).then(function(data){
-	    			var lat = parseFloat(data.data[0].lat);
-	    			var lon = parseFloat(data.data[0].lon);
+	    		actorSrv.getCoordinates(address).then(function(data){
+	    			var lat = (data.data[0].filmography.actor); //krijg juiste objectdeel terug
+	    			
+	    			
+	    			var lon = 5; //weg straks.
+	    			
+	    			console.log(lat.length);
+	    			
+	    			console.log(lat[0].title);
+	    			var act = "";
+	    			for(var i = 0; i < lat.length; i++){
+		    			act += " " + (lat[i].title);
+		    			console.log(act);
+		    			}
+	    			
+	    			console.log(lat);
+	    			
+	    			$scope.color = act;
+	    			
+	    			/*
 		    		var zones = saveSrv.getObject('zones');
 		    		
 		    		if(Object.keys(zones).length == 0){
@@ -47,23 +64,25 @@ angular.module('parkingApp', ['ngRoute'])
 		    		}
 		    		else {
 		    			$scope.color = zoneSrv.getTariff(lon, lat, zones.data);
-		    		}
+		    		}*/
+		    		
+		    		
 	    		});
 	    	});
     })
    
-    .service('addressSrv', function($http, $q) {
+    .service('actorSrv', function($http, $q) {
     		this.getCoordinates = function(address) {
 	    		var q = $q.defer();
-	    		var url = 'http://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(address) + '&format=json';
-
+	    		var url = 'http://theimdbapi.org/api/find/person?name=' + encodeURIComponent(address) + '&format=json'; //url werkt
+	    		
 	    		$http.get(url)
 	    			.then(function(data){
 	    				q.resolve(data);
 	    			}, function error(err) {
 	    				q.reject(err);
 	    			});
-	    			
+	    			console.log(q.promise);
 	    			return q.promise;
 	    		};
     })
