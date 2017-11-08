@@ -23,14 +23,25 @@ angular.module('movieApp', ['ngRoute'])
 	    			var actorObject = (data.data[0].filmography.actor); //krijg juiste objectdeel terug
 	    			
 	    			var actorString = "";
+	    			var actorArray = [];
 	    			for(var i = 0; i < actorObject.length; i++){
 		    			actorString += (actorObject[i].title) + " ; ";
+		    			actorArray.push(actorObject[i].title);
 		    			}
+	    			console.log(actorArray);
+	    			$scope.films = actorArray;
 	    			
-	    			$scope.films = actorString;
+	    			//saveSrv.setObject(actor ,actorArray); dit werkt niet, niet duidelijk waarom niet
 	    			
-	    			saveSrv.setObject(actor ,actorString);
- 		
+	    			var doc = {};
+	    			doc.movies = actorString;
+	    			var json = JSON.stringify(doc)
+	    			console.log(json)
+
+	    			saveSrv.setObject(json, actor);
+	    			
+	    			
+	    			
 	    		});
 	    	});
     })
@@ -116,10 +127,25 @@ angular.module('movieApp', ['ngRoute'])
     })*/
     
     .service('saveSrv', function($window, $http){
-		  this.setObject = function(key, value){
-			  $window.localStorage[key] = JSON.stringify(value);
+		  this.setObject = function(json, actor){
+			 //$window.localStorage[key] = JSON.stringify(value);
 			  //Save in CouchDB
-			  $http.put('http://127.0.0.1:5984/examenwebtechnologies/' + key, value);
+			  //$http.put('http://127.0.0.1:5984/examenwebtechnologies/' + key, value");
+			  
+  			$.ajax({
+				type:			'PUT',
+				url:				'http://127.0.0.1:5984/examenwebtechnologies/' + actor,
+				data:			json,
+				contentType: 	'application/json',
+				async:			true,
+				success:		function(data){
+				},
+				error:		function(XMLHttpRequest, textStatus, errorThrown){
+					console.log(errorThrown); 
+				}
+			});
+			  
+			  
 		  };
 		  
 		  this.getObject = function(key){
